@@ -1,0 +1,18 @@
+<resources>
+  <string name="app_name">Konnect Esp8266</string>
+  <string name="action_settings">Settings</string>
+
+  <string name="title_activity_scan">Scan for ESP8266 nodes</string>
+  <string name="title_activity_launch">Setup ESP8266</string>
+
+  <string name="scan_scanning_primary_text">Scanning for ESP8266 access points</string>
+  <string name="scan_scanning_secondary_text">Please wait… this won\'t take long.</string>
+  <string name="scan_no_results_primary_text">No ESP8266 access points found.</string>
+  <string name="scan_no_results_secondary_text">Are you sure you pressed the configure button?</string>
+  <string name="scan_results_instructions">Please select an ESP8266 access point to configure:</string>
+
+  <string name="course_location_permission_rationale_message">Accessing WiFi scan results can allow an app to determine your location, however, this app requires to access the WiFi scan results to automatically find the NodeMCU. Proceed to permission dialog box?</string>
+  <string name="course_location_permission_rationale_title">Permission to course location required</string>
+  <string name="course_location_permission_denied_message">App has not been granted course location permission. It can\'t continue.</string>
+
+</resources>
