@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath 'com.android.tools.build:gradle:2.1.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -20,7 +20,7 @@ repositories {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
 
     defaultConfig {
         applicationId "com.umranium.esp8266.app"
@@ -47,7 +47,7 @@ android {
     }
 }
 
-def androidSupportVersion = '23.1.1';
+def androidSupportVersion = '23.3.0';
 def rxVersion = '1.1.0';
 def retrofitVersion = '2.0.1';
 
