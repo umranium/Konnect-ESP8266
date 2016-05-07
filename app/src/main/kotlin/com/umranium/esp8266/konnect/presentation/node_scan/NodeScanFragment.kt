@@ -1,6 +1,8 @@
 package com.umranium.esp8266.konnect.presentation.node_scan
 
 import android.Manifest.permission
+import android.content.Context
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -10,7 +12,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.umranium.esp8266.konnect.R
 import com.umranium.esp8266.konnect.R.string
+import com.umranium.esp8266.konnect.data.wifievents.WifiEvents
 import com.umranium.esp8266.konnect.presentation.common.BaseFragment
+import com.umranium.esp8266.konnect.presentation.node_scan.helpers.ScannedAccessPointExtracter
 import com.umranium.esp8266.konnect.presentation.utils.permissions.PermissionHandler
 import com.umranium.esp8266.konnect.presentation.utils.permissions.PermissionHandler.Details
 
@@ -19,9 +23,18 @@ const val LOCATION_PERMISSION_REQUEST_CODE = 1
 /**
  * The fragment that shows the ESP8266 access points found through a WiFi scan
  */
-class NodeScanFragment: BaseFragment<NodeScanFragmentController>(), NodeScanFragmentController.Surface {
+class NodeScanFragment : BaseFragment<NodeScanFragmentController>(), NodeScanFragmentController.Surface {
 
-  override val controller = NodeScanFragmentController(this, { activityController.activityBus })
+  private val NODE_MCU_AP_FMT = "ESP.*"
+
+  override val controller = NodeScanFragmentController(
+    localBusProvider = { activityController.activityBus },
+    surface = this,
+    wifiEventDispatcher = WifiEvents.dispatcher,
+    wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager,
+    scannedAccessPointExtracter = ScannedAccessPointExtracter(NODE_MCU_AP_FMT.toRegex(),
+      context.getSystemService(Context.WIFI_SERVICE) as WifiManager)
+  )
 
   private lateinit var scanningLayout: ViewGroup
   private lateinit var noResultsLayout: ViewGroup
@@ -49,19 +62,19 @@ class NodeScanFragment: BaseFragment<NodeScanFragmentController>(), NodeScanFrag
     super.onActivityCreated(savedInstanceState)
     permissionHandler = PermissionHandler(this)
     startWifiScan = permissionHandler.register(
-        Details(
-            requestCode = LOCATION_PERMISSION_REQUEST_CODE,
-            payloadFunc = { controller.startWifiScan() },
-            permissions = arrayOf(permission.ACCESS_COARSE_LOCATION),
-            permissionRationaleTitle = string.course_location_permission_rationale_title,
-            permissionRationaleMessage = string.course_location_permission_rationale_message,
-            deniedFunc = { handleLackOfCourseLocationPermission() },
-            neverAskFunc = { handleLackOfCourseLocationPermission() }
-        )
+      Details(
+        requestCode = LOCATION_PERMISSION_REQUEST_CODE,
+        payloadFunc = { controller.onStart(listAdapter.clickEvents) },
+        permissions = arrayOf(permission.ACCESS_COARSE_LOCATION),
+        permissionRationaleTitle = string.course_location_permission_rationale_title,
+        permissionRationaleMessage = string.course_location_permission_rationale_message,
+        deniedFunc = { handleLackOfCourseLocationPermission() },
+        neverAskFunc = { handleLackOfCourseLocationPermission() }
+      )
     )
   }
 
-  override fun onResume() {
+  override fun onStart() {
     super.onStart()
     startWifiScan()
   }
@@ -71,11 +84,6 @@ class NodeScanFragment: BaseFragment<NodeScanFragmentController>(), NodeScanFrag
     controller.onStop()
   }
 
-  override fun onDestroy() {
-    super.onDestroy()
-    controller.onDestroy()
-  }
-
   override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
     permissionHandler.onRequestPermissionsResult(requestCode, grantResults)
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -83,7 +91,7 @@ class NodeScanFragment: BaseFragment<NodeScanFragmentController>(), NodeScanFrag
 
   private fun handleLackOfCourseLocationPermission() {
     Toast.makeText(context, R.string.course_location_permission_denied_message, Toast.LENGTH_LONG)
-        .show();
+      .show();
     activity.finish();
   }
 
@@ -91,6 +99,10 @@ class NodeScanFragment: BaseFragment<NodeScanFragmentController>(), NodeScanFrag
     scanningLayout.visibility = View.VISIBLE
     noResultsLayout.visibility = View.GONE
     resultsListLayout.visibility = View.GONE
+  }
+
+  override fun startAccessPointConfigActivity(accessPoint: ScannedAccessPoint) {
+    Toast.makeText(context, "Clicked ${accessPoint.ssid}", Toast.LENGTH_SHORT)
   }
 
   override fun showNoResultsLayout() {
